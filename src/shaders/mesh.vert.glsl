@@ -1,5 +1,3 @@
-attribute vec3 position;
-
 uniform float uPointSize;
 
 void main() {
