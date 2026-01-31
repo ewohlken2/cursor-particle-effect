@@ -1,7 +1,5 @@
 uniform float uTime;
 uniform vec2 uCursor;
-uniform vec2 uResolution;
-uniform float uPixelRatio;
 
 attribute float aSeed;
 attribute float aRadius;
@@ -10,7 +8,6 @@ attribute float aBand;
 attribute float aHue;
 
 varying float vHue;
-varying float vBand;
 
 void main() {
   float t = uTime;
@@ -32,9 +29,8 @@ void main() {
   float sizePulse = 1.0 + 0.15 * sin(t * 0.6 + aSeed * 4.0);
 
   vHue = aHue + t * 0.03 + band * 0.08;
-  vBand = band;
 
   vec4 mvPosition = vec4(pos, 0.0, 1.0);
   gl_Position = mvPosition;
-  gl_PointSize = baseSize * sizePulse * uPixelRatio;
+  gl_PointSize = baseSize * sizePulse;
 }

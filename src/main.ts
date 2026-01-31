@@ -21,10 +21,6 @@ const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const uniforms = {
   uTime: { value: 0 },
   uCursor: { value: new THREE.Vector2(0, 0) },
-  uResolution: {
-    value: new THREE.Vector2(window.innerWidth, window.innerHeight),
-  },
-  uPixelRatio: { value: renderer.getPixelRatio() },
 };
 
 const geometry = createParticles(160);
@@ -60,8 +56,6 @@ window.addEventListener("mouseleave", () => {
 window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
-  uniforms.uPixelRatio.value = renderer.getPixelRatio();
 });
 
 const clock = new THREE.Clock();
