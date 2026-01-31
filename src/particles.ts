@@ -8,11 +8,16 @@ export const createParticles = (count: number) => {
   const bands = new Float32Array(count);
   const hues = new Float32Array(count);
 
+  const minRadius = 0.03;
+  const maxRadius = 0.35;
+  const range = maxRadius - minRadius;
+
   for (let i = 0; i < count; i++) {
+    const radius = minRadius + Math.random() * range;
     seeds[i] = Math.random();
-    radii[i] = 0.05 + Math.random() * 0.25;
+    radii[i] = radius;
     angles[i] = Math.random() * Math.PI * 2;
-    bands[i] = Math.random();
+    bands[i] = (radius - minRadius) / range;
     hues[i] = Math.random();
   }
 
