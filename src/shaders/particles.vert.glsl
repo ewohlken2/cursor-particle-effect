@@ -1,5 +1,6 @@
 uniform float uTime;
 uniform vec2 uCursor;
+uniform float uWaveIntensity;
 
 attribute float aSeed;
 attribute float aRadius;
@@ -17,6 +18,11 @@ void main() {
 
   // Low-cost turbulence to keep motion organic.
   float wobble = 0.02 * sin(t * 0.8 + aSeed * 12.0);
+
+  // Radial wave moving outward/inward from cursor.
+  float wave = sin((r * 18.0) - t * 2.2 + aSeed * 1.5);
+  r += wave * uWaveIntensity;
+
   vec2 offset = vec2(cos(angle), sin(angle)) * r;
   offset += vec2(-sin(angle), cos(angle)) * wobble;
 

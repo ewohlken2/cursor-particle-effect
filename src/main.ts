@@ -4,6 +4,7 @@ import vertexShader from "./shaders/particles.vert.glsl?raw";
 import fragmentShader from "./shaders/particles.frag.glsl?raw";
 import { createParticles } from "./particles";
 import { lerp } from "./motion";
+import { adjustWaveIntensity } from "./wave";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 if (!app) {
@@ -21,6 +22,7 @@ const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const uniforms = {
   uTime: { value: 0 },
   uCursor: { value: new THREE.Vector2(0, 0) },
+  uWaveIntensity: { value: 0.25 },
 };
 
 const geometry = createParticles(160);
@@ -39,6 +41,9 @@ scene.add(points);
 const targetCursor = new THREE.Vector2(0, 0);
 const currentCursor = new THREE.Vector2(0, 0);
 
+let targetWaveIntensity = uniforms.uWaveIntensity.value;
+let currentWaveIntensity = uniforms.uWaveIntensity.value;
+
 const updateTargetCursor = (x: number, y: number) => {
   const nx = (x / window.innerWidth) * 2 - 1;
   const ny = -(y / window.innerHeight) * 2 + 1;
@@ -51,6 +56,15 @@ window.addEventListener("mousemove", (event) => {
 
 window.addEventListener("mouseleave", () => {
   targetCursor.set(0, 0);
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowUp") {
+    targetWaveIntensity = adjustWaveIntensity(targetWaveIntensity, 1);
+  }
+  if (event.key === "ArrowDown") {
+    targetWaveIntensity = adjustWaveIntensity(targetWaveIntensity, -1);
+  }
 });
 
 window.addEventListener("resize", () => {
@@ -69,6 +83,9 @@ const animate = () => {
     lerp(currentCursor.y, targetCursor.y, 0.12)
   );
   uniforms.uCursor.value.copy(currentCursor);
+
+  currentWaveIntensity = lerp(currentWaveIntensity, targetWaveIntensity, 0.08);
+  uniforms.uWaveIntensity.value = currentWaveIntensity;
 
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
