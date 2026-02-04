@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
         mesh: resolve(__dirname, "mesh.html"),
+        field: resolve(__dirname, "field.html"),
       },
     },
   },
