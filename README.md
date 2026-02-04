@@ -6,6 +6,7 @@ Organic cursor-following particle cloud built with three.js + Vite.
 
 - `/` - Cursor-following particle cloud with pulsing waves
 - `/mesh` - Mesh grid particles with spring constraints and collision radius
+- `/field` - Field-driven particle plane with curl-ish flow + cursor lens
 
 ## Run
 
