@@ -19,6 +19,9 @@ uniform float uOscillateSpeed;
 uniform float uOscillateDirJitter;
 uniform float uOscillateWobbleAmp;
 uniform float uOscillateWobbleSpeed;
+uniform float uOscillateEdgeStart;
+uniform float uOscillateEdgeAmpBoost;
+uniform float uOscillateEdgeJitterBoost;
 uniform float uSizeFalloffInnerStart;
 uniform float uSizeFalloffInnerRate;
 uniform float uSizeFalloffOuterStart;
@@ -86,9 +89,12 @@ vec2 lensOscillate(vec2 base, vec2 center, vec2 lensDir, float t) {
   float dist = length(dir);
   float falloff = smoothstep(uLensRadius, 0.0, dist);
   float phase = dist * uOscillateFreq - t * uOscillateSpeed + aPhase;
-  float oscillation = sin(phase) * uOscillateAmp;
+  float edgeT = smoothstep(uOscillateEdgeStart, uLensRadius, dist);
+  float oscillation = sin(phase) * uOscillateAmp * mix(1.0, uOscillateEdgeAmpBoost, edgeT);
   float wobble = sin(t * uOscillateWobbleSpeed + aPhase) * uOscillateWobbleAmp;
-  float jitterAngle = (aSeed - 0.5) * 2.0 * uOscillateDirJitter + wobble;
+  float jitterAngle =
+    (aSeed - 0.5) * 2.0 * uOscillateDirJitter * mix(1.0, uOscillateEdgeJitterBoost, edgeT)
+    + wobble;
   float c = cos(jitterAngle);
   float s = sin(jitterAngle);
   vec2 jitterDir = vec2(
