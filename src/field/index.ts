@@ -13,6 +13,10 @@ const CONFIG = {
     height: 2,
   },
   uniforms: {
+    outerLens: {
+      lensRadius: 0.8,
+      lensStrength: 0.3,
+    },
     pointScale: 14.0,
     flowAmp: 0.003,
     waveAmp: 0.06,
@@ -43,7 +47,7 @@ const CONFIG = {
     velocityFollow: 0.02,
     dirFollow: 0.02,
     dirMinSpeed: 0.0005,
-    minDt: 0.0001,
+    minDt: 0.5,
   },
 } as const;
 

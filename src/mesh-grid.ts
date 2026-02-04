@@ -25,8 +25,6 @@ export type GridState = {
 
 const indexFor = (x: number, y: number, cols: number) => y * cols + x;
 
-const centerColFor = (cols: number) => Math.floor(cols / 2);
-
 const pinnedColsFor = (cols: number) => {
   const colsList: number[] = [];
   for (let col = 0; col < cols; col++) colsList.push(col);
@@ -46,7 +44,7 @@ const isPinnedIndex = (index: number, cols: number, rows: number) => {
   return pinnedColsFor(cols).includes(col);
 };
 
-const pinnedTargetForIndex = (index: number, cols: number, rows: number, bound: number) => {
+const pinnedTargetForIndex = (index: number, cols: number, bound: number) => {
   const col = index % cols;
   const row = Math.floor(index / cols);
   const y = row === 0 ? -bound : bound;
@@ -65,7 +63,7 @@ const applyEdgePins = (state: GridState) => {
   }
 
   for (const index of indices) {
-    const target = pinnedTargetForIndex(index, cols, rows, bound);
+    const target = pinnedTargetForIndex(index, cols, bound);
     const p = points[index];
     p.x = target.x;
     p.y = target.y;
@@ -217,7 +215,7 @@ const resolveCollisions = (state: GridState) => {
             p.x = aOut.x;
             p.y = aOut.y;
           } else {
-            const target = pinnedTargetForIndex(idx, cols, rows, bound);
+            const target = pinnedTargetForIndex(idx, cols, bound);
             p.x = target.x;
             p.y = target.y;
           }
@@ -226,7 +224,7 @@ const resolveCollisions = (state: GridState) => {
             other.x = bOut.x;
             other.y = bOut.y;
           } else {
-            const target = pinnedTargetForIndex(nIdx, cols, rows, bound);
+            const target = pinnedTargetForIndex(nIdx, cols, bound);
             other.x = target.x;
             other.y = target.y;
           }

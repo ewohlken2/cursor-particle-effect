@@ -46,3 +46,7 @@
 ## Configuration & Assets
 - Vite multi-page inputs are defined in `vite.config.ts`.
 - Add new routes by creating an HTML entry and wiring it in Vite.
+## Agent Notes (Learnings)
+- Field-related configs are centralized in `src/field/index.ts` under `CONFIG`.
+- Lens behavior is shader-driven in `src/field/shaders/field.vert.glsl`; most motion tweaks should be implemented there and exposed via uniforms.
+- Oscillation lens uses `uLensCenter` and `uLensDir` to keep motion smooth even when the cursor stops or changes direction.
