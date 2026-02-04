@@ -5,12 +5,24 @@ uniform float uPointScale;
 uniform float uFlowAmp;
 uniform float uWaveAmp;
 uniform float uJitterAmp;
-uniform float uLensMode;
+uniform float uLensType;
+uniform vec2 uLensCenter;
+uniform vec2 uLensDir;
 uniform float uLensRadius;
 uniform float uLensStrength;
 uniform float uSwirlStrength;
 uniform float uVortexFreq;
 uniform float uVortexSpeed;
+uniform float uOscillateAmp;
+uniform float uOscillateFreq;
+uniform float uOscillateSpeed;
+uniform float uOscillateDirJitter;
+uniform float uOscillateWobbleAmp;
+uniform float uOscillateWobbleSpeed;
+uniform float uSizeFalloffInnerStart;
+uniform float uSizeFalloffInnerRate;
+uniform float uSizeFalloffOuterStart;
+uniform float uSizeFalloffOuterRate;
 
 attribute float aSeed;
 attribute float aPhase;
@@ -51,8 +63,8 @@ vec2 curlLike(vec2 p, float t) {
   return vec2(-v.y, v.x);
 }
 
-vec2 lensPushSwirl(vec2 base, vec2 mouse, vec2 mouseV, float t) {
-  vec2 dir = base - mouse;
+vec2 lensPushSwirl(vec2 base, vec2 center, vec2 mouseV, float t) {
+  vec2 dir = base - center;
   float dist = length(dir);
   float falloff = smoothstep(uLensRadius, 0.0, dist);
   vec2 normDir = dist > 0.0001 ? dir / dist : vec2(0.0, 1.0);
@@ -69,11 +81,31 @@ vec2 lensPushSwirl(vec2 base, vec2 mouse, vec2 mouseV, float t) {
   return push + swirl;
 }
 
-vec2 applyLens(vec2 base, vec2 mouse, vec2 mouseV, float t) {
-  if (uLensMode < 0.5) {
+vec2 lensOscillate(vec2 base, vec2 center, vec2 lensDir, float t) {
+  vec2 dir = base - center;
+  float dist = length(dir);
+  float falloff = smoothstep(uLensRadius, 0.0, dist);
+  float phase = dist * uOscillateFreq - t * uOscillateSpeed + aPhase;
+  float oscillation = sin(phase) * uOscillateAmp;
+  float wobble = sin(t * uOscillateWobbleSpeed + aPhase) * uOscillateWobbleAmp;
+  float jitterAngle = (aSeed - 0.5) * 2.0 * uOscillateDirJitter + wobble;
+  float c = cos(jitterAngle);
+  float s = sin(jitterAngle);
+  vec2 jitterDir = vec2(
+    lensDir.x * c - lensDir.y * s,
+    lensDir.x * s + lensDir.y * c
+  );
+  return jitterDir * oscillation * falloff;
+}
+
+vec2 applyLens(vec2 base, vec2 center, vec2 mouseV, vec2 lensDir, float t) {
+  if (uLensType < 0.5) {
     return vec2(0.0);
   }
-  return lensPushSwirl(base, mouse, mouseV, t);
+  if (uLensType < 1.5) {
+    return lensPushSwirl(base, center, mouseV, t);
+  }
+  return lensOscillate(base, center, lensDir, t);
 }
 
 void main() {
@@ -89,7 +121,7 @@ void main() {
   vec2 offset = flow + waves + jitter;
 
   // Cursor lens: push + swirl so particles flow around the cursor, not into it.
-  vec2 lensOffset = applyLens(base.xy, uMouse, uMouseV, t);
+  vec2 lensOffset = applyLens(base.xy, uLensCenter, uMouseV, uLensDir, t);
 
   vec3 displaced = base + vec3(offset + lensOffset, 0.0);
 
@@ -97,5 +129,10 @@ void main() {
   vDepth = z;
 
   gl_Position = vec4(displaced, 1.0);
-  gl_PointSize = uPointScale * (0.6 + z * 0.8);
+  float lensDist = length(base.xy - uLensCenter);
+  float innerFalloff = max(0.0, uSizeFalloffInnerStart - lensDist);
+  float outerFalloff = max(0.0, lensDist - uSizeFalloffOuterStart);
+  float innerScale = exp(-uSizeFalloffInnerRate * innerFalloff);
+  float outerScale = exp(-uSizeFalloffOuterRate * outerFalloff);
+  gl_PointSize = uPointScale * (0.6 + z * 0.8) * innerScale * outerScale;
 }

@@ -8,26 +8,38 @@ import { lerp } from "../motion";
 const CONFIG = {
   grid: {
     cols: 25,
-    rows: 25,
+    rows: 30,
     width: 2.2,
-    height: 1.4,
+    height: 2,
   },
   uniforms: {
     pointScale: 14.0,
     flowAmp: 0.003,
     waveAmp: 0.06,
-    jitterAmp: 0.02,
-    lensMode: 1,
-    lensRadius: 3,
-    lensStrength: 0.2,
+    jitterAmp: 0.002,
+    lensType: 2,
+    lensRadius: 0.8,
+    lensStrength: 0.3,
     swirlStrength: 0.0,
-    vortexFreq: 100.0,
-    vortexSpeed: 4.0,
+    vortexFreq: 0,
+    vortexSpeed: 0.002,
+    oscillateAmp: 0.2,
+    oscillateFreq: 1.0,
+    oscillateSpeed: 1.0,
+    oscillateDirJitter: 0,
+    oscillateWobbleAmp: 0,
+    oscillateWobbleSpeed: 0.8,
+    sizeFalloffInnerStart: 0.6,
+    sizeFalloffInnerRate: 4,
+    sizeFalloffOuterStart: 0.8,
+    sizeFalloffOuterRate: 8,
   },
 
   mouse: {
-    follow: 0.12,
-    velocityFollow: 0.2,
+    follow: 0.025,
+    velocityFollow: 0.02,
+    dirFollow: 0.02,
+    dirMinSpeed: 0.0005,
     minDt: 0.0001,
   },
 } as const;
@@ -54,16 +66,28 @@ const uniforms = {
   uTime: { value: 0 },
   uMouse: { value: new THREE.Vector2(0, 0) },
   uMouseV: { value: new THREE.Vector2(0, 0) },
+  uLensCenter: { value: new THREE.Vector2(0, 0) },
+  uLensDir: { value: new THREE.Vector2(1, 0) },
   uPointScale: { value: CONFIG.uniforms.pointScale },
   uFlowAmp: { value: CONFIG.uniforms.flowAmp },
   uWaveAmp: { value: CONFIG.uniforms.waveAmp },
   uJitterAmp: { value: CONFIG.uniforms.jitterAmp },
-  uLensMode: { value: CONFIG.uniforms.lensMode },
+  uLensType: { value: CONFIG.uniforms.lensType },
   uLensRadius: { value: CONFIG.uniforms.lensRadius },
   uLensStrength: { value: CONFIG.uniforms.lensStrength },
   uSwirlStrength: { value: CONFIG.uniforms.swirlStrength },
   uVortexFreq: { value: CONFIG.uniforms.vortexFreq },
   uVortexSpeed: { value: CONFIG.uniforms.vortexSpeed },
+  uOscillateAmp: { value: CONFIG.uniforms.oscillateAmp },
+  uOscillateFreq: { value: CONFIG.uniforms.oscillateFreq },
+  uOscillateSpeed: { value: CONFIG.uniforms.oscillateSpeed },
+  uOscillateDirJitter: { value: CONFIG.uniforms.oscillateDirJitter },
+  uOscillateWobbleAmp: { value: CONFIG.uniforms.oscillateWobbleAmp },
+  uOscillateWobbleSpeed: { value: CONFIG.uniforms.oscillateWobbleSpeed },
+  uSizeFalloffInnerStart: { value: CONFIG.uniforms.sizeFalloffInnerStart },
+  uSizeFalloffInnerRate: { value: CONFIG.uniforms.sizeFalloffInnerRate },
+  uSizeFalloffOuterStart: { value: CONFIG.uniforms.sizeFalloffOuterStart },
+  uSizeFalloffOuterRate: { value: CONFIG.uniforms.sizeFalloffOuterRate },
 };
 
 const material = new THREE.ShaderMaterial({
@@ -82,7 +106,9 @@ scene.add(points);
 const targetMouse = new THREE.Vector2(0, 0);
 const currentMouse = new THREE.Vector2(0, 0);
 const currentMouseV = new THREE.Vector2(0, 0);
+const currentLensDir = new THREE.Vector2(1, 0);
 let lastMouse = new THREE.Vector2(0, 0);
+let hasPointer = false;
 
 const updateTarget = (x: number, y: number) => {
   const nx = (x / window.innerWidth) * 2 - 1;
@@ -92,10 +118,11 @@ const updateTarget = (x: number, y: number) => {
 
 window.addEventListener("pointermove", (event) => {
   updateTarget(event.clientX, event.clientY);
+  hasPointer = true;
 });
 
 window.addEventListener("pointerleave", () => {
-  targetMouse.set(0, 0);
+  hasPointer = false;
 });
 
 window.addEventListener("resize", () => {
@@ -126,6 +153,19 @@ const animate = () => {
 
   uniforms.uMouse.value.copy(currentMouse);
   uniforms.uMouseV.value.copy(currentMouseV);
+  uniforms.uLensCenter.value.copy(currentMouse);
+
+  const speed = currentMouseV.length();
+  if (hasPointer && speed > CONFIG.mouse.dirMinSpeed) {
+    const dir = currentMouseV.clone().normalize();
+    currentLensDir
+      .set(
+        lerp(currentLensDir.x, dir.x, CONFIG.mouse.dirFollow),
+        lerp(currentLensDir.y, dir.y, CONFIG.mouse.dirFollow),
+      )
+      .normalize();
+  }
+  uniforms.uLensDir.value.copy(currentLensDir);
 
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
