@@ -7,6 +7,7 @@ type FieldGeometryOptions = {
   height: number;
 };
 
+// Builds a deterministic anchor grid with per-point seed/phase attributes.
 export const createFieldGeometry = ({ cols, rows, width, height }: FieldGeometryOptions) => {
   const count = cols * rows;
   const positions = new Float32Array(count * 3);

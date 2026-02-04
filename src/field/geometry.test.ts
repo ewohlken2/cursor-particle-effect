@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { createFieldGeometry } from "./field-geometry";
+import { createFieldGeometry } from "./geometry";
 
 test("createFieldGeometry builds attributes with expected sizes", () => {
   const geometry = createFieldGeometry({ cols: 10, rows: 6, width: 2, height: 1 });

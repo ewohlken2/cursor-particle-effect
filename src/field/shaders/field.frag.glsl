@@ -3,6 +3,7 @@ precision highp float;
 varying float vDepth;
 
 void main() {
+  // Soft disc with depth-tinted color for subtle fake depth.
   vec2 uv = gl_PointCoord.xy - 0.5;
   float d = length(uv) * 2.0;
   float alpha = smoothstep(1.0, 0.0, d);
